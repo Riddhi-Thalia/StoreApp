@@ -49,14 +49,13 @@ class ShopifyController extends Controller
     {
         $shopDomain = session('shop');
         $shop = Shop::where('domain', $shopDomain)->first();
-
-        $token = AccessToken::select('access_token')->first();
- 
+        
         if (!$shop) {
             session()->flash('error', 'Shop not found. Please reinstall the app.');
             return redirect()->route('install');
         }
-
+        
+        $token = AccessToken::select('access_token')->first();
         try {
             $client = new Client();
             $response = $client->get("https://{$shopDomain}/admin/api/2023-10/shop.json", [
@@ -66,6 +65,13 @@ class ShopifyController extends Controller
             ]);
 
             $shopData = json_decode($response->getBody()->getContents());
+
+            $shop->update([
+                'name' => $shopData->shop->name
+            ]);
+
+            // Save to session for middleware auth later
+            session(['shop_name' => $shopData->shop->name]);
 
             return view('shop', ['shop' => $shopData->shop]);
 
