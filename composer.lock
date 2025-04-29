@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "adb4b680144df947b976ddb89b6572b1",
+    "content-hash": "70636a675de74644880a88bebb30643f",
     "packages": [
         {
             "name": "brick/math",
@@ -5513,6 +5513,48 @@
                 }
             ],
             "time": "2025-01-17T11:39:41+00:00"
+        },
+        {
+            "name": "thalia/shopify-rest-to-graphql",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pawan1793/shopify-rest-to-graphql.git",
+                "reference": "4aab9e47576c68c488544a99eaffe0df977e4fa9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pawan1793/shopify-rest-to-graphql/zipball/4aab9e47576c68c488544a99eaffe0df977e4fa9",
+                "reference": "4aab9e47576c68c488544a99eaffe0df977e4fa9",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": ">=7.5",
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "App\\": "app/",
+                    "Thalia\\ShopifyRestToGraphql\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pawan More",
+                    "email": "pawanmore38@gmail.com"
+                }
+            ],
+            "description": "Shopify REST to GraphQL : Converts Shopify REST API payloads to GraphQL queries with minimal changes for seamless Laravel integration.",
+            "support": {
+                "issues": "https://github.com/pawan1793/shopify-rest-to-graphql/issues",
+                "source": "https://github.com/pawan1793/shopify-rest-to-graphql/tree/v1.0.2"
+            },
+            "time": "2025-04-25T05:48:56+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
