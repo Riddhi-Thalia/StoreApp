@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Welcome !!</h2>
+        <h2>Welcome, {{ $shopName }}!</h2>
 
         @if (session('error'))
             <div class="alert alert-danger">
@@ -16,6 +16,7 @@
             </div>
         @endif
         <div class="mt-3">
+
             <a href="{{ route('store') }}" class="btn btn-secondary">View Store</a>
         </div>
     </div>
