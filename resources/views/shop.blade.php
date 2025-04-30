@@ -17,7 +17,7 @@
     <table class="table table-striped">
         <tr><th>ID</th><td>{{ $shop->id }}</td></tr>
         <tr><th>Name</th><td>{{ $shop->name }}</td></tr>
-        <tr><th>Domain</th><td>{{ $shop->domain }}</td></tr>
+        <tr><th>Domain</th><td><a href="{{ 'https://'.$shop->domain }}">{{ $shop->domain }}</a></td></tr>
         <tr><th>Email</th><td>{{ $shop->email }}</td></tr>
         <tr><th>Country</th><td>{{ $shop->country }}</td></tr>
         <tr><th>Plan</th><td>{{ $shop->plan_name }}</td></tr>
