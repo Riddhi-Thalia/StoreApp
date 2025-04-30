@@ -58,7 +58,7 @@ class ShopifyController extends Controller
         $token = AccessToken::select('access_token')->first();
         try {
             $client = new Client();
-            $response = $client->get("https://{$shopDomain}/admin/api/2023-10/shop.json", [
+            $response = $client->get("https://{$shopDomain}/admin/api/2025-04/shop.json", [
                 'headers' => [
                     'X-Shopify-Access-Token' => $token->access_token,
                 ],
