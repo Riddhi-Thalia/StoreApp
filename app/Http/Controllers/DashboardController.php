@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shop;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -9,8 +10,8 @@ class DashboardController extends Controller
     public function dashboard()
     {
        
-        $shopName = session('shop_name');
+        $shopName = Shop::select('name')->first();
 
-        return view('dashboard', ['shopName' => $shopName]);
+        return view('dashboard', ['shopName' => $shopName->name]);
     }
 }

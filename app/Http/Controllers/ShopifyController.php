@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Thalia\ShopifyRestToGraphql\Endpoints\OauthEndpoints;
-use GuzzleHttp\Client;
+use Thalia\ShopifyRestToGraphql\Endpoints\ShopEndpoints;
 use App\Models\AccessToken;
 use App\Models\Shop;
 
@@ -30,17 +30,16 @@ class ShopifyController extends Controller
         $oauthEndpoint = new OauthEndpoints($shop, env('SHOPIFY_API_KEY'), env('SHOPIFY_API_SECRET'));
         $token = $oauthEndpoint->getAccessToken($code);
 
-        // Save or update the token
-        $storeToken = AccessToken::updateOrCreate(
+        AccessToken::updateOrCreate(
             ['access_token' => $token]
         );
 
-        $shopModel = Shop::updateOrCreate(
+        $shop = Shop::updateOrCreate(
             ['domain' => $shop]
         );
 
         // Save to session for middleware auth later
-        session(['shop' => $shopModel->domain]);
+        session(['shop' => $shop->domain]);
 
         return redirect()->route('dashboard');
     }
@@ -48,38 +47,33 @@ class ShopifyController extends Controller
     public function getShopData()
     {
         $shopDomain = session('shop');
-        $shop = Shop::where('domain', $shopDomain)->first();
-        
-        if (!$shop) {
-            session()->flash('error', 'Shop not found. Please reinstall the app.');
-            return redirect()->route('install');
+        if (!$shopDomain) {
+            return redirect()->route('dashboard')->with('error', 'Shop not found in session.');
         }
-        
-        $token = AccessToken::select('access_token')->first();
-        try {
-            $client = new Client();
-            $response = $client->get("https://{$shopDomain}/admin/api/2025-04/shop.json", [
-                'headers' => [
-                    'X-Shopify-Access-Token' => $token->access_token,
-                ],
-            ]);
 
-            $shopData = json_decode($response->getBody()->getContents());
+        $shop = Shop::where('domain', $shopDomain)->first();
+        if (!$shop) {
+            return redirect()->route('dashboard')->with('error', 'Shop not found. Please reinstall the app.');
+        }
+
+        $token = AccessToken::select('access_token')->first();
+        if (!$token) {
+            return redirect()->route('dashboard')->with('error', 'Access token not found.');
+        }
+
+        try {
+            $endpoint = new ShopEndpoints($shopDomain, $token->access_token);
+            $shopDetails = $endpoint->shopInfo();
 
             $shop->update([
-                'name' => $shopData->shop->name
+                'name' => $shopDetails['name'] ?? $shop->name
             ]);
 
-            // Save to session for middleware auth later
-            session(['shop_name' => $shopData->shop->name]);
-
-            return view('shop', ['shop' => $shopData->shop]);
+            $shopData = json_decode(json_encode($shopDetails));
+            return view('shop', ['shop' => $shopData]);
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Unable to fetch shop data. Please check your connection or token.');
-            return redirect()->route('dashboard');
+            return redirect()->route('dashboard')->with('error', 'Unable to fetch shop data. ' . $e->getMessage());
         }
     }
-
-    
 }
