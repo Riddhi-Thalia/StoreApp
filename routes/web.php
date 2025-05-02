@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::get('install', [ShopifyController::class, 'install'])->name('install');
 Route::get('auth/callback', [ShopifyController::class, 'callback'])->name('auth.callback');
+Route::get('subscribe-plan', [ShopifyController::class, 'showSubscribeForm'])->name('subscribe');
+Route::post('subscribe-plan', [ShopifyController::class, 'subscribePlan'])->name('subscribe.plan');
 
 Route::middleware('auth.shop')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');

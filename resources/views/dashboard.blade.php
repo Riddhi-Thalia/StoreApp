@@ -8,16 +8,36 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Welcome, {{ $shopName }}!</h2>
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Welcome, {{ $shopName }}!</h2>
+        </div>
 
         @if (session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}
             </div>
         @endif
-        <div class="mt-3">
 
-            <a href="{{ route('store') }}" class="btn btn-secondary">View Store</a>
+        <div class="text-center mb-4">
+            <a href="{{ route('store') }}" class="btn btn-outline-primary">View Store</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Subscription Info</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Plan Name:</strong>
+                        <span class="text-dark"> Basic Plan </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Status:</strong>
+                        <span class="badge bg-success">Active</span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </body>

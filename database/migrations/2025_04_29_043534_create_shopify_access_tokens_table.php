@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('shopify_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('access_token');
+            $table->string('charge_id')->nullable();
             $table->timestamps();
         });
     }
