@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('charge_id')->nullable();
             $table->string('shop_domain')->nullable();
             $table->string('shop_name')->nullable();
+            $table->boolean('is_installed')->default(false);
+            $table->boolean('is_subscribed')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
