@@ -24,7 +24,9 @@ class User extends Authenticatable
         'access_token',
         'charge_id',
         'shop_domain',
-        'shop_name'
+        'shop_name',
+        'is_subscribed',
+        'is_installed'
     ];
 
     /**
