@@ -9,62 +9,62 @@ use Thalia\ShopifyRestToGraphql\Endpoints\RecurringApplicationChargesEndpoints;
 use Thalia\ShopifyRestToGraphql\GraphqlService;
 use App\Models\AccessToken;
 use App\Models\Shop;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class ShopifyController extends Controller
 {
     public function install(Request $request)
     {
-        $shop = $request->get('shop');
+        $shopDomain = $request->shop;
         $scopes = 'read_products,write_orders';
         $redirectUri = env('SHOPIFY_APP_REDIRECT_URI');
+        User::updateOrCreate(['shop_domain' => $shopDomain]);
 
-        return redirect()->away("https://{$shop}/admin/oauth/authorize?client_id=" . env('SHOPIFY_API_KEY') . "&scope={$scopes}&redirect_uri={$redirectUri}");
+        return redirect()->away("https://{$shopDomain}/admin/oauth/authorize?client_id=" . env('SHOPIFY_API_KEY') . "&scope={$scopes}&redirect_uri={$redirectUri}");
     }
 
     public function callback(Request $request)
     {
-        $shopDomain = env('SHOPIFY_SHOP_DOMAIN');
-        $code = $request->get('code');
-        $chargeId = $request->query('charge_id') ?? '';
-
-        if (!$shopDomain) {
-            return redirect()->route('subscribe')->withErrors('Missing shop domain.');
-        }
+        $shopDomain = $request->shop;
+        $code = $request->code;
+        $chargeId = $request->charge_id ?? '';
 
         try {
             if ($code) {
                 $oauthEndpoint = new OauthEndpoints($shopDomain, env('SHOPIFY_API_KEY'), env('SHOPIFY_API_SECRET'));
                 $token = $oauthEndpoint->getAccessToken($code);
 
-                AccessToken::updateOrCreate(['access_token' => $token, 'charge_id' => $chargeId]);
-                Shop::updateOrCreate(['domain' => $shopDomain]);
+                User::updateOrCreate(
+                    ['shop_domain' => $shopDomain],
+                    ['access_token' => $token, 'charge_id' => $chargeId]
+                );
             }
 
-            $token = AccessToken::first()->access_token;
-            $subscription = new RecurringApplicationChargesEndpoints($shopDomain, $token);
+            $data = User::first();
+
+            $subscription = new RecurringApplicationChargesEndpoints($data->shop_domain, $data->access_token);
 
             $response = $subscription->currentAppInstallationForRecurring($chargeId);
             $isSubscribed = isset($response['status']) && $response['status'] === 'active';
 
             if (!$isSubscribed) {
-                return redirect()->route('subscribe');
+                return redirect()->route('subscribe',['shop'=>$shopDomain]);
             }
 
             return redirect()->route('dashboard');
 
         } catch (\Exception $e) {
             Log::error("OAuth Callback Error: " . $e->getMessage());
-            return redirect()->route('subscribe')->withErrors('Callback failed: ' . $e->getMessage());
+            return redirect()->route('subscribe',['shop'=>$shopDomain])->withErrors('Callback failed: ' . $e->getMessage());
         }
     }
 
     public function subscribePlan(Request $request)
     {
-        $shopDomain = env('SHOPIFY_SHOP_DOMAIN');
-        $token = AccessToken::first()->access_token;
-
-        $charge = new RecurringApplicationChargesEndpoints($shopDomain, $token);
+        $data = User::where('shop_domain',$request->shop)->first();
+     
+        $charge = new RecurringApplicationChargesEndpoints($data->shop_domain, $data->access_token);
 
         $params = [
             'recurring_application_charge' => [
@@ -79,7 +79,7 @@ class ShopifyController extends Controller
         $response = $charge->appSubscriptionCreate($params);
 
         if (!isset($response['confirmation_url'])) {
-            return redirect()->route('subscribe')->withErrors('Unable to create subscription.');
+            return redirect()->route('subscribe', ['shop', $data->shop_domain])->withErrors('Unable to create subscription.');
         }
 
         return redirect()->away($response['confirmation_url']);
@@ -87,24 +87,21 @@ class ShopifyController extends Controller
 
     public function getShopData()
     {
-        $shopDomain = env('SHOPIFY_SHOP_DOMAIN');
-
-        $shop = Shop::where('domain', $shopDomain)->first();
-        if (!$shop) {
+        $data = User::select('shop_domain','access_token')->first();
+        if (!$data->shop_domain) {
             return redirect()->route('dashboard')->with('error', 'Shop not found. Please reinstall the app.');
         }
 
-        $token = AccessToken::select('access_token')->first();
-        if (!$token) {
+        if (!$data->access_token) {
             return redirect()->route('dashboard')->with('error', 'Access token not found.');
         }
 
         try {
-            $endpoint = new ShopEndpoints($shopDomain, $token->access_token);
+            $endpoint = new ShopEndpoints($data->shop_domain, $data->access_token);
             $shopDetails = $endpoint->shopInfo();
 
-            $shop->update([
-                'name' => $shopDetails['name'] ?? $shop->name
+            $data->update([
+                'shop_name' => $shopDetails['name'] ?? $data->shop_name
             ]);
 
             $shopData = json_decode(json_encode($shopDetails));
@@ -115,8 +112,8 @@ class ShopifyController extends Controller
         }
     }
 
-    public function showSubscribeForm()
+    public function showSubscribeForm(Request $request,$shop)
     {
-        return view('subscribe');
+        return view('subscribe', ['shop' => $shop]);
     }
 }
