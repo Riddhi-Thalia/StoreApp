@@ -12,6 +12,6 @@ class DashboardController extends Controller
        
         $shopName = User::select('shop_name')->first();
 
-        return view('dashboard', ['shopName' => $shopName->name]);
+        return view('dashboard', ['shopName' => $shopName->shop_name]);
     }
 }

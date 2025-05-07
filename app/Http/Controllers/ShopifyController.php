@@ -113,10 +113,12 @@ class ShopifyController extends Controller
         try {
             $endpoint = new ShopEndpoints($data->shop_domain, $data->access_token);
             $shopDetails = $endpoint->shopInfo();
-
-            $data->update([
-                'shop_name' => $shopDetails['name'] ?? $data->shop_name
-            ]);
+            
+            User::updateOrCreate(
+                ['shop_domain' => $data->shop_domain],
+                ['shop_name' => $shopDetails['name'] ?? $data->shop_name]
+            );
+            
 
             $shopData = json_decode(json_encode($shopDetails));
             return view('shop', ['shop' => $shopData]);
@@ -129,5 +131,19 @@ class ShopifyController extends Controller
     public function showSubscribeForm(Request $request,$shop)
     {
         return view('subscribe', ['shop' => $shop]);
+    }
+
+    public function checkApp(Request $request){
+        $data = User::where('shop_domain',$request->shop)->first();
+
+        if (isset($data) && $data->is_installed ) {
+            if(!$data->is_subscribed){
+                return redirect()->route('subscribe',['shop'=>$request->shop]);
+            }
+            return redirect()->route('dashboard');
+        }else{
+
+            return redirect()->route('install', $request->all());
+        }
     }
 }

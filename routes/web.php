@@ -8,6 +8,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('check-app', [ShopifyController::class, 'checkApp']);
 Route::get('install', [ShopifyController::class, 'install'])->name('install');
 Route::get('auth/callback', [ShopifyController::class, 'callback'])->name('auth.callback');
 Route::get('subscribe-plan/{shop}', [ShopifyController::class, 'showSubscribeForm'])->name('subscribe');
