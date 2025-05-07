@@ -31,7 +31,8 @@ class ShopifyController extends Controller
         User::updateOrCreate(['shop_domain' => $shopDomain],
                              ['is_installed'=> true]);
 
-        return redirect()->away("https://{$shopDomain}/admin/oauth/authorize?client_id=" . env('SHOPIFY_API_KEY') . "&scope={$scopes}&redirect_uri={$redirectUri}");
+        $oauthEndpoint = new OauthEndpoints($shopDomain, env('SHOPIFY_API_KEY'), env('SHOPIFY_API_SECRET'));
+        return redirect()->away($oauthEndpoint->getAuthorizeUrl($scopes, $redirectUri));
     }
 
     public function callback(Request $request)
@@ -132,18 +133,5 @@ class ShopifyController extends Controller
     {
         return view('subscribe', ['shop' => $shop]);
     }
-
-    public function checkApp(Request $request){
-        $data = User::where('shop_domain',$request->shop)->first();
-
-        if (isset($data) && $data->is_installed ) {
-            if(!$data->is_subscribed){
-                return redirect()->route('subscribe',['shop'=>$request->shop]);
-            }
-            return redirect()->route('dashboard');
-        }else{
-
-            return redirect()->route('install', $request->all());
-        }
-    }
+ 
 }
