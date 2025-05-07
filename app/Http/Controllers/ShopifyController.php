@@ -6,9 +6,6 @@ use Illuminate\Http\Request;
 use Thalia\ShopifyRestToGraphql\Endpoints\OauthEndpoints;
 use Thalia\ShopifyRestToGraphql\Endpoints\ShopEndpoints;
 use Thalia\ShopifyRestToGraphql\Endpoints\RecurringApplicationChargesEndpoints;
-use Thalia\ShopifyRestToGraphql\GraphqlService;
-use App\Models\AccessToken;
-use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
